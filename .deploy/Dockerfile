@@ -29,7 +29,8 @@ ARG NON_ROOT_GROUP=${NON_ROOT_GROUP:-app}
 ARG NON_ROOT_USER=${NON_ROOT_USER:-app}
 RUN addgroup -S $NON_ROOT_GROUP && adduser -S $NON_ROOT_USER -G $NON_ROOT_GROUP
 RUN addgroup $NON_ROOT_USER wheel
-
+# Install node & npm
+RUN apk add --update nodejs npm
 # Set cron job
 COPY ./.deploy/config/crontab /etc/crontabs/$NON_ROOT_USER
 RUN chmod 777 /usr/sbin/crond
@@ -45,6 +46,10 @@ RUN rm -rf /home/$NON_ROOT_USER/.composer
 # Copy app
 COPY --chown=$NON_ROOT_USER:$NON_ROOT_GROUP . $LARAVEL_PATH/
 COPY ./.deploy/config/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+# Run npm install and npm build
+RUN npm install
+RUN npm run build
 
 # Set any ENVs
 ARG APP_KEY=${APP_KEY}
